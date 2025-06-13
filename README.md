@@ -96,7 +96,7 @@ Text-to-image-generator-project/
 
 🛠️ 1. Clone the Repository
 
-git clone https://github.com/Shrutipadwal/Text-to-Image-Generator.git
+git clone https://github.com/kadlagRutujaRajendra/Text-to-Image-Generator.git
 cd text-to-image-generator
 (Replace with your actual repo URL)
 
@@ -149,8 +149,8 @@ Visit http://localhost:3000 in your browser.
 
 🧑‍💻 Author
 
-Developed by SHRUTI PADWAL
+Developed by RUTUJA KADLAG
 
 M.Sc. Computer Science
 
-LinkedIn: https://www.linkedin.com/in/shruti-padwal-b39054264/
+LinkedIn:https://www.linkedin.com/in/rutuja-kadlag-357544258
