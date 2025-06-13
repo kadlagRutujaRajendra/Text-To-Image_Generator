@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Text-to-Image Generator</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+
+<!-- Header -->
+<header class="bg-gray-800 p-4">
+  <nav class="flex justify-between items-center max-w-7xl mx-auto">
+    
+    <!-- Centered Navigation Links -->
+    <div class="flex-1 flex justify-center">
+      <ul class="flex space-x-12">
+        <li><a href="/generate" class="text-xl text-gray-300 hover:text-white">Home</a></li>
+        <li><a href="/likes" class="text-xl text-gray-300 hover:text-white">Likes</a></li>
+        <li><a href="/history" class="text-xl text-gray-300 hover:text-white">History</a></li>
+        <li><a href="/edit" class="text-xl text-gray-300 hover:text-white">Edit</a></li>
+      </ul>
+    </div>
+
+    <!-- User Avatar with Dropdown -->
+    <div class="relative">
+      <div id="userAvatar" class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer">R</div>
+      <div id="userDropdown" class="absolute right-0 mt-2 w-64 bg-gray-700 text-white rounded-lg shadow-lg p-4 hidden z-50">
+        <!-- <p><strong>Name:</strong> <span id="userName"></span></p>
+        <p><strong>Email:</strong> <span id="userEmail"></span></p> -->
+        <button id="logoutBtn" class="mt-4 w-full bg-blue-500 hover:bg-red-600 text-white py-2 rounded">Logout</button>
+      </div>
+    </div>
+    
+  </nav>
+</header>
+
+
+
+  <!-- Main Content Area -->
+  <div class="container mx-auto p-6">
+    <h1 class="text-4xl font-bold text-center mb-6">Text-to-Image Generator</h1>
+
+    <!-- Form Container with Medium Size -->
+    <div class="bg-gray-800 p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+      <form id="imageForm">
+        <textarea id="prompt" class="w-full p-4 rounded-lg text-black mb-4" placeholder="Enter your prompt..." rows="4" required></textarea>
+        <div class="flex space-x-4 mb-4">
+          <select id="size" class="w-full p-4 rounded-lg bg-gray-700 text-white">
+            <option value="512x512">512x512</option>
+            <option value="1024x1024">1024x1024</option>
+          </select>
+          <select id="style" class="w-full p-4 rounded-lg bg-gray-700 text-white">
+            <option value="artistic">Artistic</option>
+            <option value="realistic">Realistic</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-3 rounded-lg bg-blue-600 text-white text-xl">Generate Image</button>
+      </form>
+    </div>
+
+    <h2 class="text-2xl font-semibold mt-12">Generated Images</h2>
+    <div id="imageCollection" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 max-w-4xl mx-auto"></div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-center py-4 mt-12">
+      <p>&copy;Text-to-image-generator powered by @Rutuja@Bhavika@Shruti</p>
+    </footer>
+  </div>
+
+  <script>
+    const form = document.getElementById('imageForm');
+    const promptInput = document.getElementById('prompt');
+    const sizeInput = document.getElementById('size');
+    const styleInput = document.getElementById('style');
+    const imageCollection = document.getElementById('imageCollection');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const prompt = promptInput.value;
+      const size = sizeInput.value;
+      const style = styleInput.value;
+      promptInput.value = '';
+
+      const loadingMessage = document.createElement('p');
+      loadingMessage.textContent = "Generating image...";
+      loadingMessage.classList.add('text-center', 'text-gray-400');
+      imageCollection.appendChild(loadingMessage);
+
+      try {
+        const response = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt, size, style })
+        });
+
+        loadingMessage.remove();
+
+        if (response.ok) {
+          const data = await response.json();
+          displayGeneratedImage(data.imagePath, data._id);
+        } else {
+          alert('Failed to generate image.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        loadingMessage.textContent = "Failed to generate image.";
+      }
+    });
+
+    function displayGeneratedImage(imagePath, id) {
+  const imgWrapper = document.createElement('div');
+  imgWrapper.classList.add('flex', 'flex-col', 'items-center', 'gap-4', 'bg-gray-800', 'p-4', 'rounded-lg', 'shadow-md');
+
+  const imgElement = document.createElement('img');
+  imgElement.src = imagePath;
+  imgElement.alt = "Generated Image";
+  imgElement.classList.add('w-full', 'h-auto', 'rounded-lg');
+
+  const btnWrapper = document.createElement('div');
+  btnWrapper.classList.add('flex', 'justify-center', 'gap-4', 'mt-2');
+
+  const likeBtn = document.createElement('button');
+  likeBtn.textContent = "Like";
+  likeBtn.classList.add('bg-blue-500', 'text-white', 'px-4', 'py-2', 'rounded', 'hover:bg-blue-600');
+
+  likeBtn.onclick = async () => {
+    try {
+      const filename = imagePath.split('/').pop(); // Extract the filename from the URL
+      const response = await fetch(`/like/${filename}`, {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        alert("Image liked!");
+        window.location.href = "/likes";
+      } else {
+        alert("Failed to like the image.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("An error occurred.");
+    }
+  };
+
+  const downloadBtn = document.createElement('a');
+  downloadBtn.textContent = "Download";
+  downloadBtn.href = imagePath;
+  downloadBtn.classList.add('bg-green-500', 'text-white', 'px-4', 'py-2', 'rounded', 'hover:bg-green-600');
+  downloadBtn.download = "generated_image.png";
+
+  btnWrapper.appendChild(likeBtn);
+  btnWrapper.appendChild(downloadBtn);
+
+  imgWrapper.appendChild(imgElement);
+  imgWrapper.appendChild(btnWrapper);
+
+  imageCollection.prepend(imgWrapper);
+}
+
+
+    async function likeImage(imageUrl) {
+      try {
+        const response = await fetch(`/like`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrl })
+        });
+
+        if (!response.ok) throw new Error('Failed to like the image');
+
+        alert('Image Liked!');
+        fetchLikedImages();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error liking the image. Please try again.');
+      }
+    }
+
+    async function dislikeImage(imageUrl) {
+      try {
+        const response = await fetch(`/unlike`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageUrl })
+        });
+
+        if (!response.ok) throw new Error('Failed to dislike the image');
+
+        fetchLikedImages();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error disliking the image. Please try again.');
+      }
+    }
+
+    async function fetchLikedImages() {
+      try {
+        const response = await fetch("/likes");
+        if (!response.ok) throw new Error('Failed to fetch liked images');
+
+        const likedImages = await response.json();
+        displayLikedImages(likedImages);
+      } catch (error) {
+        console.error('Error fetching liked images:', error);
+      }
+    }
+
+    function displayLikedImages(images) {
+      likedImagesContainer.innerHTML = '';
+
+      if (images.length === 0) {
+        likedImagesContainer.innerHTML = '<p>No liked images found.</p>';
+        return;
+      }
+
+      images.forEach(image => {
+        const imgWrapper = document.createElement('div');
+        imgWrapper.classList.add('image-wrapper');
+
+        const imgElement = document.createElement('img');
+        imgElement.src = image.imageUrl;
+        imgElement.alt = "Liked Image";
+        imgElement.classList.add('generated-image');
+
+        const dislikeBtn = document.createElement('button');
+        dislikeBtn.textContent = "Dislike";
+        dislikeBtn.onclick = () => dislikeImage(image.imageUrl);
+
+        imgWrapper.appendChild(imgElement);
+        imgWrapper.appendChild(dislikeBtn);
+
+        likedImagesContainer.appendChild(imgWrapper);
+      });
+    }
+
+    // User dropdown toggle
+    const avatar = document.getElementById('userAvatar');
+    const dropdown = document.getElementById('userDropdown');
+    const userName = document.getElementById('userName');
+    const userEmail = document.getElementById('userEmail');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    avatar.addEventListener('click', () => {
+      dropdown.classList.toggle('hidden');
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('token');
+      window.location.href = "/";
+    });
+    async function fetchUserDetails() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.log("No token found");
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/user/me', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+
+    const resultText = await res.text();
+    console.log("Response from /api/user/me:", resultText);
+
+    if (!res.ok) throw new Error('Not authorized');
+
+    const user = JSON.parse(resultText);
+    userName.textContent = user.name;
+    userEmail.textContent = user.email;
+    avatar.textContent = user.name[0]?.toUpperCase() || "U";
+  } catch (error) {
+    console.error('Error fetching user details:', error);
+  }
+}
+
+    window.onload = () => {
+      fetchUserDetails();
+      fetchLikedImages();
+    };
+  </script>
+</body>
+</html>

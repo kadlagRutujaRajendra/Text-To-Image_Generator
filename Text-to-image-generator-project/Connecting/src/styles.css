@@ -1,0 +1,33 @@
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #333;
+    color: white;
+    padding: 1rem;
+  }
+  
+  .navbar ul {
+    display: flex;
+    list-style: none;
+    gap: 1rem;
+  }
+  
+  .navbar ul li button {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+  }
+  
+  .image-collection {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  
+  .image-wrapper img {
+    width: 100%;
+    border-radius: 8px;
+  }
+  
