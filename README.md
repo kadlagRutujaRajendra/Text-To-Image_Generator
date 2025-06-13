@@ -1,2 +1,2 @@
 # Text-To-Image_Generator
-Built a web app to generate AI images from text prompts using the Gemini API. Features include user authentication, image editing, prompt-based generation, image history, and like/download options.
+A MERN stack application using the Google Gemini API to generate high-quality images from user-input prompts. The platform supports image generation, editing, liking, downloading, and image history with user authentication.
